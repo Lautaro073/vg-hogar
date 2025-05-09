@@ -1,0 +1,203 @@
+.productos {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.producto {
+  border: 1px solid #ccc;
+  padding: 15px;
+  margin: 15px;
+  width: 200px;
+  text-align: center;
+}
+
+.producto img {
+  max-width: 100%;
+}
+
+.producto h4 {
+  font-size: 1.2em;
+  margin: 10px 0;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin: 0 -15px;
+}
+
+/* Estilos de las cards */
+.card {
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: transform 0.3s;
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+
+.card:hover {
+  transform: scale(1.05);
+}
+
+.card img {
+  width: 100%;
+  height: 400px;
+  object-fit: cover;
+  cursor: zoom-in;
+}
+
+.card-body {
+  padding: 20px;
+}
+
+.card-title {
+  font-size: 18px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* limita a 2 líneas */
+  -webkit-box-orient: vertical;
+}
+
+.card-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 4; /* limita a 4 líneas */
+  margin-bottom: 15px; /* Ajusta el margen para evitar que se superponga con otros elementos */
+}
+
+@media (max-width: 768px) {
+  .card-title {
+    font-size: 16px;
+  }
+}
+.card-actions {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center; /* Centra horizontalmente */
+}
+/* Estilos de los botones */
+button.btnn {
+  width: 100%;
+  background-color: #ff4500;
+  color: #fff;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  align-self: flex-end;
+  padding: 5px 10px;
+  font-size: 13px; /* Añade un pequeño margen para separar los botones */
+  min-height: 40px;
+  display: flex; /* Usa flexbox para centrar verticalmente */
+  align-items: center; /* Centra verticalmente el contenido del botón */
+}
+
+button.btnn:hover {
+  background-color: #e43f00;
+}
+
+/* Nuevos estilos para el botón de WhatsApp */
+.btn-success {
+  background-color: transparent !important;
+  border: none;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn-success:hover {
+  transform: scale(1.1); /* Efecto de "ampliación" en hover */
+}
+.btn-whatsapp {
+  padding: 10px;
+  border-radius: 50%;
+  background-color: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color .2s;
+}
+
+.btn-whatsapp:hover {
+  background-color: rgba(0, 255, 0, 0.1); /* Sutil fondo verde al pasar el mouse */
+}
+
+@media (max-width: 576px) {
+  .btn-group {
+    flex-direction: row;
+  }
+}
+
+.btn-confirm {
+  background-color: #25D366; /* Color de fondo de WhatsApp */
+  color: white;
+  border: none;
+  padding: 10px 18px; /* Ajustado el padding para que el botón no sea tan grande */
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color .3s;
+}
+
+.btn-confirm:hover {
+  background-color: #128C7E; /* Un tono más oscuro para el hover */
+}
+
+.btnnn-primary {
+  background-color: #FF4500; /* naranja brillante*/
+  border: none;
+  padding: 10px 20px;
+  margin: 20px 0;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btnnn-primary:hover {
+  background-color: #FF6347; /* un naranja un poco más claro para el hover*/
+}
+.mt-3{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+#btn-pagar{
+  width: auto;
+  font-size: 16px;
+}
+
+
+/* Estilos para el menú desplegable más pequeño */
+.select-container select {
+  width: 170px; /* Ajusta el ancho según sea necesario */
+  height: 30px; /* Ajusta la altura del menú desplegable */
+  padding: 5px;
+  font-size: 13px; /* Tamaño de la letra */
+  background-color: #000; /* Color de fondo predeterminado */
+  color: #ffffff; /* Color de la letra */
+  border: 1px solid #ccc; /* Borde */
+  border-radius: 4px; /* Esquinas redondeadas */
+  cursor: pointer;
+  position: relative; /* Cambio importante: utiliza position:relative */
+  top: 5px; /* Ajusta el desplazamiento vertical del menú */
+}
+
+
+/* Cambiar el color de fondo cuando el menú está desplegado */
+.select-container select:focus {
+  background-color: #000; /* Color de fondo cuando el menú está enfocado */
+  color: #fff;
+}
+@media (min-width: 991px) {
+  .card img {
+  height: 200px;
+  }
+}
