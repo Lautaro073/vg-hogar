@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-// Asegúrate de importar correctamente el componente PaymentButton
 import { useCarrito } from "../../Context/CarritoContext";
 import Preload from "../../components/Preload/index";
+import { Plus, Minus } from "lucide-react";
+import { Button } from "../ui/button";
 import "../../config";
 
 function Carrito() {
@@ -14,20 +15,18 @@ function Carrito() {
 
     document.body.appendChild(alertDiv);
 
-    // Dar un pequeño tiempo para que la alerta inicialice y luego agregar la clase 'show'
     setTimeout(() => {
       alertDiv.classList.add("show");
     }, 10);
 
-    // Después de 3 segundos, remover la alerta
     setTimeout(() => {
       alertDiv.classList.remove("show");
-      // Esperamos que termine la transición de salida y luego eliminamos el elemento del DOM
       setTimeout(() => {
         alertDiv.remove();
-      }, 310); // 10 ms adicionales para asegurarnos de que la transición ha terminado
+      }, 310);
     }, 3000);
   }
+  
   const [productos, setProductos] = useState([]);
   const navigate = useNavigate();
   const sessionId = localStorage.getItem("sessionId");
@@ -47,18 +46,12 @@ function Carrito() {
     cargarProductos();
   }, [cargarProductos]);
 
-
-  const agregarProducto = async (productoId, talle) => {
-    console.log("Producto ID:", productoId); // Agrega esta línea
+  const agregarProducto = async (productoId) => {
     try {
       const stockActual = await verificarStock(productoId);
-
-      // Obtén el producto del estado productos del carrito
       const producto = productos.find((p) => p.id_producto === productoId);
 
-      // Verifica si ya hay productos en el carrito
       if (producto) {
-        // Verifica si agregar más productos excederá el stock disponible
         if (producto.cantidad + 1 > stockActual) {
           showAlert(
             "No hay suficiente stock disponible para agregar más productos.",
@@ -67,7 +60,6 @@ function Carrito() {
           return;
         }
       } else {
-        // Si no hay productos del mismo tipo en el carrito, verifica si la cantidad a agregar supera el stock disponible
         if (1 > stockActual) {
           showAlert(
             "No hay suficiente stock disponible para agregar más productos.",
@@ -77,12 +69,11 @@ function Carrito() {
         }
       }
 
-      // Continúa con el proceso de agregar el producto al carrito
       const response = await axios.post(`carrito/${carritoId}`, {
         id_producto: productoId,
-        cantidad: 1,
-        talle: talle, // Asegúrate de enviar el talle al backend
+        cantidad: 1
       });
+      
       await actualizarCarrito();
       if (response.status === 201 || response.status === 200) {
         cargarProductos();
@@ -93,13 +84,10 @@ function Carrito() {
     }
   };
 
-  const quitarProducto = async (productoId, talle) => {
-    console.log("ID recibido:", productoId);
-    console.log("Lista de productos:", productos);
+  const quitarProducto = async (productoId) => {
     try {
-      const producto = productos.find(
-        (p) => p.id_producto === productoId && p.talle === talle
-      );
+      const producto = productos.find((p) => p.id_producto === productoId);
+      
       if (!producto) {
         console.error("Producto no encontrado:", productoId);
         return;
@@ -107,38 +95,36 @@ function Carrito() {
   
       let response;
       if (producto.cantidad > 1) {
-        // Si hay más de una unidad, simplemente reducimos la cantidad
+        // Si hay más de una unidad, reducimos la cantidad
         response = await axios.put(
-          `carrito/${carritoId}/${productoId}/${talle}`,
+          `carrito/${carritoId}/${productoId}`,
           {
             cantidad: producto.cantidad - 1,
           }
         );
       } else {
-        // Si hay solo una unidad, eliminamos el producto del carrito
+        // Si hay solo una unidad, eliminamos el producto
         response = await axios.delete(
-          `carrito/${carritoId}/${productoId}/${talle}`
+          `carrito/${carritoId}/${productoId}`
         );
       }
+      
       await actualizarCarrito();
       if (response.status === 200) {
         cargarProductos();
         showAlert("Producto eliminado", "error");
       }
-
     } catch (error) {
       console.error("Error al quitar producto:", error);
     }
   };
   
-
   const verificarStock = async (productoId) => {
     if (!productoId) {
       console.error("Producto ID no definido");
       return 0;
     }
     const response = await axios.get(`productos/${productoId}/stock`);
-
     return response.data.stock;
   };
 
@@ -153,19 +139,16 @@ function Carrito() {
 
   const handlePayment = async () => {
     try {
-      // Concatena los nombres de todos los productos en el carrito
       const productDetails = productos
-        .map((producto) => `${producto.nombre} (Talle: ${producto.talle})`)
+        .map(producto => producto.nombre)
         .join(", ");
-        const total = calcularTotal();
-     const checkoutData = {
-    // ...todos los otros datos necesarios para el checkout...
-    total_pedido: total, // Asegúrate de enviar el total calculado
-  };
-   const response = await axios.post("create_preference", {
-        title: `Compra de: ${productDetails}`, // Incluye los nombres de los productos en el título
+        
+      const total = calcularTotal();
+      
+      const response = await axios.post("create_preference", {
+        title: `Compra de: ${productDetails}`,
         quantity: 1,
-        price: calcularTotal(),
+        price: total,
       });
 
       setPaymentUrl(response.data);
@@ -173,11 +156,8 @@ function Carrito() {
       console.log("Error al crear la preferencia", error);
     }
   };
-  
-
 
   useEffect(() => {
-    // Verifica si el parámetro "status" está presente en la URL
     const queryParams = new URLSearchParams(window.location.search);
     const paymentStatus = queryParams.get("status");
   
@@ -186,87 +166,93 @@ function Carrito() {
         navigate("/carrito");
       } 
     }
-  }, []);
+  }, [navigate]);
+  
   return (
-    <div className="main-container">
-      <div className="container mt-4">
-        <h2 style={{ color: "white" }}>Productos en el Carrito</h2>
+    <div className="bg-crema min-h-screen py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 className="text-2xl font-bold text-marron mb-6">Productos en el Carrito</h2>
 
         {!cargaCompleta ? (
           <Preload />
         ) : productos.length === 0 ? (
-          <div className="alert alert-dark" role="alert">
+          <div className="bg-crema-oscuro p-4 rounded-md text-marron">
             No hay productos en el carrito.
           </div>
         ) : (
-          <div>
+          <div className="bg-crema-oscuro rounded-md overflow-hidden shadow">
             {productos.map((producto, index) => (
               <div
                 key={index}
-                className="d-flex justify-content-between align-items-center py-2"
-                style={{
-                  borderBottom: "1px solid #ff4500",
-                  backgroundColor: "black",
-                  color: "white",
-                }}
+                className={`flex flex-col md:flex-row justify-between items-center p-4 ${
+                  index < productos.length - 1 ? "border-b border-marron/10" : ""
+                }`}
               >
-                <img
-                  src={producto.imagen}
-                  alt={producto.nombre}
-                  width="50"
-                  height="50"
-                  className="mr-3"
-                />
-                <div>
-                  <h5 className="mb-1">{producto.nombre}</h5>
-                  <p className="mb-1">Talle: {producto.talle}</p>
+                <div className="flex items-center mb-4 md:mb-0">
+                  <img
+                    src={producto.imagen}
+                    alt={producto.nombre}
+                    className="w-16 h-16 object-cover rounded-md mr-4"
+                  />
+                  <div>
+                    <h3 className="text-marron font-medium">{producto.nombre}</h3>
+                    <p className="text-marron/70 text-sm">${producto.precio} / unidad</p>
+                  </div>
                 </div>
-                <div>
-                  <button
-                    className="btn btn-sm btn-outline-danger mr-2"
-                    onClick={() =>
-                      quitarProducto(producto.id_producto, producto.talle)
-                    }
+                
+                <div className="flex items-center">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8 w-8 rounded-full p-0 border border-marron/30 text-marron"
+                    onClick={() => quitarProducto(producto.id_producto)}
                   >
-                    -
-                  </button>
-                  <span className="badge bg-black text-white rounded-pill mr-2 ml-2">
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  
+                  <span className="mx-3 text-marron font-medium">
                     {producto.cantidad}
                   </span>
-                  <button
-                    className="btn btn-sm btn-outline-success ml-2"
-                    onClick={() =>
-                      agregarProducto(producto.id_producto, producto.talle)
-                    }
+                  
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8 w-8 rounded-full p-0 border border-marron/30 text-marron"
+                    onClick={() => agregarProducto(producto.id_producto)}
                   >
-                    +
-                  </button>
-
-                  <div className="badge bg-primary rounded-pill ml-3">
-                    ${producto.precio * producto.cantidad}
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                  
+                  <div className="ml-6 bg-marron text-crema px-3 py-1 rounded-full text-sm font-medium">
+                    ${(producto.precio * producto.cantidad).toFixed(2)}
                   </div>
                 </div>
               </div>
             ))}
-          </div>
-        )}
-
-        {productos.length > 0 && (
-          <div className="mt-3">
-            {paymentUrl ? (
-              <a
-                className="btn btn-primary"
-                href={paymentUrl}
-                rel="noopener noreferrer"
-              >
-                Pagar con Mercado Pago
-              </a>
-            ) : (
-              <button className="btnn btn-principal" onClick={handlePayment} id="btn-pagar">
-                {" "}
-                Proceder al Pago - Total: ${calcularTotal()}
-              </button>
-            )}
+            
+            <div className="p-4 bg-crema-oscuro/80 border-t border-marron/10">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-marron font-medium">Total:</span>
+                <span className="text-marron font-bold text-xl">${calcularTotal().toFixed(2)}</span>
+              </div>
+              
+              {paymentUrl ? (
+                <a
+                  href={paymentUrl}
+                  rel="noopener noreferrer"
+                  className="block w-full bg-marron hover:bg-marron/80 text-crema py-2 px-4 rounded text-center transition-colors"
+                >
+                  Pagar con Mercado Pago
+                </a>
+              ) : (
+                <Button 
+                  className="w-full bg-marron hover:bg-marron/80 text-crema" 
+                  onClick={handlePayment}
+                >
+                  Proceder al Pago
+                </Button>
+              )}
+            </div>
           </div>
         )}
       </div>

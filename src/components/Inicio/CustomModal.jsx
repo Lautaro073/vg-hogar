@@ -1,27 +1,25 @@
-import React, { useState, useEffect } from "react";
-import Modal from "react-modal";
-import "../../css/CustomModal.css";
+import React, { useEffect } from "react";
 import { useCarrito } from "../../Context/CarritoContext";
+
+// Importaciones de shadcn/ui
+import { Button } from "../ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "../ui/dialog";
 
 const CustomModal = ({ isOpen, closeModal, product }) => {
   const { agregarAlCarrito, loadingMessage } = useCarrito();
-  const [talleSeleccionado, setTalleSeleccionado] = useState("");
 
   const handleAgregarAlCarrito = () => {
-    if (product && talleSeleccionado) {
-      agregarAlCarrito({ ...product, talleSeleccionado }, 1);
-      setTalleSeleccionado("");
-      // closeModal(); // Si quieres cerrar el modal al agregar al carrito
-    } else {
-      showAlert(
-        "Por favor, selecciona un talle antes de agregar al carrito.",
-        "error"
-      );
+    if (product) {
+      agregarAlCarrito(product, 1);
+      //closeModal(); // Ahora cerramos el modal al agregar al carrito
     }
-  };
-
-  const handleTalleChange = (e) => {
-    setTalleSeleccionado(e.target.value);
   };
 
   useEffect(() => {
@@ -32,18 +30,42 @@ const CustomModal = ({ isOpen, closeModal, product }) => {
 
   function showAlert(message, type) {
     const alertDiv = document.createElement("div");
-    alertDiv.className = `alert-custom alert-${type}`;
+    
+    // Clases de Tailwind para la alerta
+    const baseClasses = "fixed bottom-5 right-5 py-3 px-4 rounded-md shadow-lg z-50 transform translate-y-12 opacity-0 transition-all duration-300";
+    
+    // Colores basados en el tipo de alerta
+    let typeClasses = "";
+    switch (type) {
+      case "success":
+        typeClasses = "bg-marron text-crema";
+        break;
+      case "error":
+        typeClasses = "bg-red-500 text-crema";
+        break;
+      case "loading":
+        typeClasses = "bg-blue-500 text-crema";
+        break;
+      default:
+        typeClasses = "bg-marron text-crema";
+    }
+    
+    alertDiv.className = `${baseClasses} ${typeClasses}`;
     alertDiv.textContent = message;
 
     document.body.appendChild(alertDiv);
 
+    // Mostrar la alerta con una pequeña animación
     setTimeout(() => {
-      alertDiv.classList.add("show");
+      alertDiv.classList.replace("translate-y-12", "translate-y-0");
+      alertDiv.classList.replace("opacity-0", "opacity-100");
     }, 10);
 
+    // Ocultar la alerta después de un tiempo
     setTimeout(() => {
-      alertDiv.classList.remove("show");
-
+      alertDiv.classList.replace("translate-y-0", "translate-y-12");
+      alertDiv.classList.replace("opacity-100", "opacity-0");
+      
       setTimeout(() => {
         alertDiv.remove();
       }, 310);
@@ -51,53 +73,41 @@ const CustomModal = ({ isOpen, closeModal, product }) => {
   }
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onRequestClose={closeModal}
-      className="Modal"
-      overlayClassName="Overlay"
-      contentLabel="Detalles del Producto"
-    >
-      <div className="ModalContent">
-        <div className="ModalCloseButton" onClick={closeModal}>
-          <div className="CloseIcon">X</div>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && closeModal()}>
+      <DialogContent className="!bg-crema-oscuro border-0 max-w-md w-full rounded-lg overflow-hidden p-0">
+        <DialogHeader className="px-4 pt-4 pb-0">
+          <div className="w-full aspect-square overflow-hidden mb-4">
+            <img
+              src={product ? product.imagen : ""}
+              alt={product ? product.nombre : ""}
+              className="w-full h-full object-cover"
+            />
+          </div>
+          
+          <DialogTitle className="text-xl font-bold text-marron">
+            {product ? product.nombre : ""}
+          </DialogTitle>
+        </DialogHeader>
+        
+        <div className="px-4 py-4 space-y-2">
+          <p className="font-medium text-marron">
+            Precio: {product ? `$${product.precio}` : ""}
+          </p>
+          <p className="text-marron">
+            {product ? product.descripcion : ""}
+          </p>
         </div>
-        <div className="ModalImageContainer">
-          <img
-            src={product ? product.imagen : ""}
-            alt={product ? product.nombre : ""}
-          />
-        </div>
-        <h2>{product ? product.nombre : ""}</h2>
-        <p>Precio: {product ? `${product.precio}$` : ""}</p>
-        <p>{product ? product.descripcion : ""}</p>
-        <div className="form-group select-container">
-          <select
-            id={`talleSelect-${product ? product.id_producto : ""}`}
-            className="form-control"
-            onClick={(e) => e.stopPropagation()}
-            onChange={handleTalleChange}
-            value={talleSeleccionado}
+        
+        <DialogFooter className="p-4">
+          <Button
+            className="w-full bg-marron hover:bg-marron/80 text-crema"
+            onClick={handleAgregarAlCarrito}
           >
-            <option value="" disabled>
-              Seleccionar talle
-            </option>
-            {product &&
-              product.tallesDisponibles.map((talle) => (
-                <option key={talle} value={talle}>
-                  {talle}
-                </option>
-              ))}
-          </select>
-        </div>
-        <button
-          className="ModalAddToCartButton"
-          onClick={handleAgregarAlCarrito}
-        >
-          Añadir al Carrito
-        </button>
-      </div>
-    </Modal>
+            Añadir al Carrito
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 

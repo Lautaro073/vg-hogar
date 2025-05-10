@@ -1,35 +1,38 @@
-import React from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
-import { Link } from "react-router-dom";
-import logo from "../../assets/logo.png";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Menu, Search, ShoppingBag, ChevronDown } from "lucide-react";
 import axios from "axios";
-import SearchResults from "./SearchResults";
-import Navbar from 'react-bootstrap/Navbar';
-import Nav from 'react-bootstrap/Nav';
-import "../../css/nav.css";
+import logo from "../../assets/logo.png";
 import { useCarrito } from "../../Context/CarritoContext";
+import SearchResults from "./SearchResults";
+
+// Importaciones de shadcn/ui
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
+import { Badge } from "../ui/badge";
 
 function NavbarPrincipal() {
   const [search, setSearch] = useState("");
   const [productos, setProductos] = useState([]);
   const [showResults, setShowResults] = useState(false);
+  const navigate = useNavigate();
 
-  const { cantidadProductos, totalCarrito, actualizarCarrito } = useCarrito(); // Usa el contexto
+  const { cantidadProductos, totalCarrito, actualizarCarrito } = useCarrito();
 
   useEffect(() => {
     actualizarCarrito();
-  }, []); // Elimina la dependencia a userId
+  }, []);
 
-  // Búsqueda de productos
   const handleSearch = (e) => {
     e.preventDefault();
-    window.location.href = `/buscar?search=${search}`;
+    navigate(`/buscar?search=${search}`);
+
     axios
       .get(`productos/search?search=${search}`)
       .then((response) => {
-        setProductos(response.data); // Actualización del estado productos
-        setShowResults(true); // Mostrar los resultados
+        setProductos(response.data);
+        setShowResults(true);
       })
       .catch((error) => {
         console.error("Error en la búsqueda:", error);
@@ -37,72 +40,86 @@ function NavbarPrincipal() {
   };
 
   return (
-    <section className="header-main bg-black">
-      <div className="container-fluid">
-        <div className="row p-2 pt-3 pb-3 d-flex align-items-center">
-          <div className="col-4 col-md-2">
-            <Link to="/" className="nav-link logo">
-              <img
-                src={logo}
-                className="img-fluid d-flex"
-                width="125"
-                alt="Logo"
-              />
-            </Link>
-          </div>
-          <div className="col-8 col-md-8">
-            <form onSubmit={handleSearch} className="d-flex form-inputs">
-              <input
-                className="form-control"
+    <header className="bg-crema-oscuro text-marron py-4 shadow-sm">
+      <div className="container mx-auto px-4">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          {/* Logo */}
+                <div className="w-full md:w-auto flex justify-center md:justify-start">
+                <Link to="/" className="block">
+                  <img src={logo} className="h-24 w-auto" alt="VG Hogar" />
+                </Link>
+                </div>
+
+                {/* Barra de búsqueda */}
+          <div className="w-full md:flex-1 max-w-xl">
+            <form onSubmit={handleSearch} className="relative flex w-full">
+              <Input
+                className="w-full !bg-crema !text-marron !placeholder:text-marron/60 rounded-r-none border-marron/20 border-r-0 
+                focus:!ring-marron/30 focus:!border-marron/30 focus:!bg-crema focus-visible:!ring-marron/30 focus-visible:!border-marron/30 focus-visible:!bg-crema"
                 type="text"
                 placeholder="Busca tu Producto..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
-              <button className="btn" type="submit">
-                <i className="bx bx-search text-black"></i>
-              </button>
+              <Button
+                type="submit"
+                className="rounded-l-none bg-marron hover:bg-marron/80 text-crema"
+              >
+                <Search className="h-4 w-4" />
+              </Button>
             </form>
           </div>
-          <div className="col-12 col-md-2 link">
-            <div className="d-flex flex-column flex-md-row align-items-center">
-              <div className="carrito-desktop">
-                <Link to="/carrito" className="nav-link">
-                  <span className="shop-bag">
-                    <i className="bx bxs-shopping-bag"></i>
-                  </span>
-                </Link>
-                <Link to="/carrito" className="nav-link">
-                  <div className="d-flex flex-column ms-2">
-                    <span className="qty">{cantidadProductos} Productos</span>
-                    <span className="fw-bold">${totalCarrito}</span>
-                  </div>
-                </Link>
+
+          {/* Carrito Desktop */}
+          <div className="w-full md:w-auto flex justify-center md:justify-end hidden md:flex">
+            <Link
+              to="/carrito"
+              className="flex items-center gap-3 text-marron hover:text-marron/80 transition-colors"
+            >
+              <div className="relative">
+                <ShoppingBag className="h-6 w-6" />
+                {cantidadProductos > 0 && (
+                  <Badge className="absolute -top-2 -right-2 bg-marron text-crema text-xs h-5 w-5 flex items-center justify-center p-0 rounded-full">
+                    {cantidadProductos}
+                  </Badge>
+                )}
               </div>
-              <button
-                className="btn-carrito "
-                onClick={() => (window.location.href = "/carrito")}
-              >
-                <i className="bx bxs-shopping-bag"></i> 
-              </button>
-            </div>
+              <div className="flex flex-col">
+                <span className="text-sm">{cantidadProductos} Productos</span>
+                <span className="font-bold">${totalCarrito}</span>
+              </div>
+            </Link>
           </div>
         </div>
       </div>
       {showResults && <SearchResults productos={productos} />}
-    </section>
+
+      {/* Botón flotante de carrito para móvil */}
+      <Link
+        to="/carrito"
+        className="fixed bottom-5 right-5 w-[60px] h-[60px] bg-marron rounded-full flex items-center justify-center shadow-lg z-50 md:hidden"
+      >
+        <div className="relative">
+          <ShoppingBag className="h-6 w-6 text-crema" />
+          {cantidadProductos > 0 && (
+            <Badge className="absolute -top-2 -right-2 bg-crema text-marron text-xs h-5 w-5 flex items-center justify-center p-0 rounded-full">
+              {cantidadProductos}
+            </Badge>
+          )}
+        </div>
+      </Link>
+    </header>
   );
 }
 
 function NavbarCategorias({ children }) {
   const [categorias, setCategorias] = useState([]);
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     async function obtenerCategorias() {
       try {
-        const response = await axios.get(
-          "categorias"
-        );
+        const response = await axios.get("categorias");
         setCategorias(response.data);
       } catch (error) {
         console.error("Error al obtener las categorías:", error);
@@ -114,17 +131,68 @@ function NavbarCategorias({ children }) {
 
   return (
     <>
-    <Navbar className="navbar navbar-dark bg-black custom-navbar " expand="lg">
-    <Navbar.Brand>Categorias:</Navbar.Brand>
-    <Navbar.Toggle bg="dark" aria-controls="basic-navbar-nav" />
-    <Navbar.Collapse id="basic-navbar-nav">
-      <Nav className="mr-auto">
-        {categorias.map((categoria) => (
-          <Nav.Link className="text-white" key={categoria.id_categoria} href={`/categoria/${categoria.nombre_categoria.toLowerCase()}`}>{categoria.nombre_categoria}</Nav.Link>
-        ))}
-      </Nav>
-    </Navbar.Collapse>
-  </Navbar>
+      {/* Versión desktop - Categorías en línea */}
+      <div className="bg-crema-oscuro text-marron hidden md:block">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center overflow-x-auto whitespace-nowrap py-2">
+            <Link
+              to="/"
+              className="px-4 py-2 font-medium text-marron hover:text-marron/70 transition-colors"
+            >
+              Inicio
+            </Link>
+
+            {categorias.map((categoria) => (
+              <Link
+                key={categoria.id_categoria}
+                to={`/categoria/${categoria.nombre_categoria.toLowerCase()}`}
+                className="px-4 py-2 text-marron hover:text-marron/70 transition-colors"
+              >
+                {categoria.nombre_categoria}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Versión mobile */}
+      <div className="bg-marron text-crema md:hidden">
+        <div className="container mx-auto px-4 py-2">
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full justify-between bg-transparent border-crema/30 text-crema hover:bg-marron/80"
+              >
+                Categorías
+                <ChevronDown className="h-4 w-4 ml-2" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="top" className="bg-crema-oscuro border-0">
+              <nav className="flex flex-col space-y-4 mt-4">
+                <Link
+                  to="/"
+                  className="text-marron hover:text-marron/70 py-2 border-b border-marron/10"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Inicio
+                </Link>
+                {categorias.map((categoria) => (
+                  <Link
+                    key={categoria.id_categoria}
+                    to={`/categoria/${categoria.nombre_categoria.toLowerCase()}`}
+                    className="text-marron hover:text-marron/70 py-2 border-b border-marron/10"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    {categoria.nombre_categoria}
+                  </Link>
+                ))}
+              </nav>
+            </SheetContent>
+          </Sheet>
+        </div>
+      </div>
+
       {children}
     </>
   );

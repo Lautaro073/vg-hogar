@@ -35,7 +35,6 @@ function CargarProducto() {
   const [stock, setStock] = useState(0);
   const [productoId, setProductoId] = useState(null);
   const [productoSeleccionado, setProductoSeleccionado] = useState("");
-  const [talle, setTalle] = useState(""); // Estado para el talle
   useEffect(() => {
     const obtenerCategorias = async () => {
       try {
@@ -59,7 +58,6 @@ function CargarProducto() {
     formData.append("precio", precio);
     formData.append("id_categoria", idCategoria);
     formData.append("stock", stock);
-    formData.append("talle", talle); // Asegúrate de incluir el talle
 
     if (imagen) {
         formData.append("imagen", imagen, imagen.name);
@@ -83,7 +81,6 @@ function CargarProducto() {
     const formData = new FormData();
     formData.append("nombre", nombreProducto);
     formData.append("descripcion", descripcion);
-    formData.append("talle", talle);
     formData.append("precio", precio);
     formData.append("id_categoria", idCategoria);
     formData.append("stock", stock);
@@ -122,7 +119,6 @@ function CargarProducto() {
       const producto = response.data;
       setNombreProducto(producto.nombre);
       setDescripcion(producto.descripcion);
-      setTalle(producto.talle)
       setPrecio(producto.precio);
       setIdCategoria(producto.id_categoria);
       setStock(producto.stock);
@@ -171,17 +167,6 @@ function CargarProducto() {
             required
           />
         </div>
-        <div className="mb-3">
-                    <label className="form-label">Talle</label>
-                    <input
-                        type="text"
-                        className="form-control"
-                        value={talle}
-                        onChange={(e) => setTalle(e.target.value)}
-                        placeholder="Agregar talles ej: M, XL, XXL"
-                        required
-                    />
-                </div>
         <div className="mb-3">
           <label className="form-label">Precio</label>
           <input

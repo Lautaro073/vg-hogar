@@ -121,7 +121,7 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
     try {
         // Datos del producto
-        const { nombre, descripcion, precio, id_categoria, stock, talle } = req.body;
+        const { nombre, descripcion, precio, id_categoria, stock } = req.body;
 
         if (!req.files || !req.files.imagen) {
             return res.status(400).send('No se subió el archivo de imagen.');
@@ -145,7 +145,7 @@ router.post('/', async (req, res) => {
         const imageId = imageResult.insertId;
 
         // Insertar datos del producto en la tabla de productos
-        await db.query('INSERT INTO Productos (nombre, descripcion, precio, id_categoria, stock, talle, id_imagen) VALUES (?, ?, ?, ?, ?, ?, ?)', [nombre, descripcion, precio, id_categoria, stock, talle, imageId]);
+        await db.query('INSERT INTO Productos (nombre, descripcion, precio, id_categoria, stock, id_imagen) VALUES ( ?, ?, ?, ?, ?, ?)', [nombre, descripcion, precio, id_categoria, stock, imageId]);
 
         res.status(201).send('Producto agregado correctamente');
     } catch (error) {
@@ -159,7 +159,7 @@ router.post('/', async (req, res) => {
 // Actualizar un producto
 router.put('/:id', verifyAdmin, async (req, res) => {
     try {
-        const { nombre, descripcion, precio, id_categoria, stock, talle } = req.body;
+        const { nombre, descripcion, precio, id_categoria, stock } = req.body;
         const productoId = req.params.id;
 
         // Obtener el id de la imagen actual del producto
@@ -185,7 +185,7 @@ router.put('/:id', verifyAdmin, async (req, res) => {
         }
 
         // Actualizar los datos del producto
-        await db.query('UPDATE Productos SET nombre = ?, descripcion = ?, precio = ?, id_categoria = ?, stock = ?, talle = ? WHERE id_producto = ?', [nombre, descripcion, precio, id_categoria, stock, talle, productoId]);
+        await db.query('UPDATE Productos SET nombre = ?, descripcion = ?, precio = ?, id_categoria = ?, stock = ? WHERE id_producto = ?', [nombre, descripcion, precio, id_categoria, stock, productoId]);
 
         res.send('Producto actualizado correctamente');
     } catch (error) {

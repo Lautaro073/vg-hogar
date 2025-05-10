@@ -1,14 +1,15 @@
 import React from "react";
-import "../../css/Preload.css";
+
 const Preload = () => {
   return (
-    <div>
-      <div className="preload">
-        <div className="preloader">
-          <div className="preloader__text">
-            <p className="preloader__msg">Cargando productos...</p>
-          </div>
+    <div className="fixed inset-0 flex items-center justify-center bg-white bg-opacity-80 z-50">
+      <div className="text-center p-6 rounded-lg">
+        <div className="mb-4">
+          <div className="h-12 w-12 rounded-full border-4 border-marron/30 border-t-marron animate-spin mx-auto"></div>
         </div>
+        <p className="text-marron font-medium text-lg">
+          Cargando productos...
+        </p>
       </div>
     </div>
   );
