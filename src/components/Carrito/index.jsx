@@ -5,6 +5,8 @@ import { useCarrito } from "../../Context/CarritoContext";
 import Preload from "../../components/Preload/index";
 import { Plus, Minus } from "lucide-react";
 import { Button } from "../ui/button";
+import { Dialog } from "../ui/dialog";
+import PaymentSelector from "./PaymentSelector";
 import "../../config";
 
 function Carrito() {
@@ -33,6 +35,7 @@ function Carrito() {
   const carritoId = sessionId;
   const { actualizarCarrito } = useCarrito();
   const [cargaCompleta, setCargaCompleta] = useState(false);
+  const [showPaymentSelector, setShowPaymentSelector] = useState(false);
 
   const cargarProductos = useCallback(() => {
     axios.get(`carrito/${carritoId}`).then((respuesta) => {
@@ -137,7 +140,11 @@ function Carrito() {
 
   const [paymentUrl, setPaymentUrl] = useState("");
 
-  const handlePayment = async () => {
+  const handleSelectPayment = () => {
+    setShowPaymentSelector(true);
+  };
+
+  const handleMercadoPagoSelected = async () => {
     try {
       const productDetails = productos
         .map(producto => producto.nombre)
@@ -152,6 +159,7 @@ function Carrito() {
       });
 
       setPaymentUrl(response.data);
+      setShowPaymentSelector(false);
     } catch (error) {
       console.log("Error al crear la preferencia", error);
     }
@@ -247,7 +255,7 @@ function Carrito() {
               ) : (
                 <Button 
                   className="w-full bg-marron hover:bg-marron/80 text-crema" 
-                  onClick={handlePayment}
+                  onClick={handleSelectPayment}
                 >
                   Proceder al Pago
                 </Button>
@@ -256,6 +264,15 @@ function Carrito() {
           </div>
         )}
       </div>
+      
+      <Dialog open={showPaymentSelector} onOpenChange={setShowPaymentSelector}>
+        <PaymentSelector 
+          onClose={() => setShowPaymentSelector(false)}
+          onSelectMercadoPago={handleMercadoPagoSelected}
+          productos={productos}
+          totalAmount={calcularTotal()}
+        />
+      </Dialog>
     </div>
   );
 }

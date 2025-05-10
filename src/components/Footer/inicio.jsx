@@ -1,10 +1,10 @@
 import React from "react";
-import {  Instagram, MessageCircle } from "lucide-react";
+import { Instagram, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 
 function Footer() {
   return (
-    <footer className="bg-crema-oscuro text-marron py-8">
+    <footer className="bg-crema-oscuro text-marron py-8 mt-auto">
       <div className="container mx-auto px-4">
         <div className="flex flex-col items-center justify-center space-y-6">
           {/* Iconos de redes sociales */}

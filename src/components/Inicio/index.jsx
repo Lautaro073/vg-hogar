@@ -42,7 +42,7 @@ function Inicio() {
           `productos?limit=${limit}&offset=${offset}`
         );
 
-        // Ya no necesitamos procesar los talles
+        // Filtrar productos duplicados por ID
         const productosFormateados = response.data;
 
         if (response.data.length < limit) {
@@ -51,10 +51,18 @@ function Inicio() {
           setHasMore(true);
         }
 
-        setProductos((prevProductos) => [
-          ...prevProductos,
-          ...productosFormateados,
-        ]);
+        // Añadir productos evitando duplicados
+        setProductos((prevProductos) => {
+          // Crear un Set con los IDs actuales para verificación rápida
+          const existingIds = new Set(prevProductos.map((p) => p.id_producto));
+
+          // Filtrar solo productos nuevos que no existían antes
+          const nuevosProductos = productosFormateados.filter(
+            (producto) => !existingIds.has(producto.id_producto)
+          );
+
+          return [...prevProductos, ...nuevosProductos];
+        });
 
         if (response.data[0]) {
           setCategoriaNombre(response.data[0].nombre_categoria);
@@ -94,52 +102,52 @@ function Inicio() {
             {categoriaNombre} Disponibles:
           </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4">
             {productos.map((producto) => (
-              <div key={producto.id_producto}>
-                <Card
-                  className="h-full cursor-pointer overflow-hidden bg-crema-oscuro border-marron/10 hover:shadow-lg transition-all duration-300"
-                  onClick={() => openModal(producto)}
-                >
-                  {/* Imagen con relación de aspecto fijo */}
-                  <div className="relative pt-[100%] overflow-hidden group">
-                    <img
-                      src={producto.imagen}
-                      alt={producto.nombre}
-                      className="absolute top-0 left-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      onError={(e) => {
-                        e.target.src = "/placeholder-image.jpg";
-                        e.target.onerror = null;
-                      }}
-                    />
-                    {/* Overlay con precio */}
-                    <div className="absolute bottom-0 right-0 bg-marron/80 text-crema px-3 py-1 text-lg font-semibold">
-                      ${producto.precio}
-                    </div>
+              <Card
+                key={`producto-${producto.id_producto}`}
+                className="h-full cursor-pointer overflow-hidden bg-crema-oscuro border-marron/10 hover:shadow-md transition-all"
+                onClick={() => openModal(producto)}
+              >
+                {/* Imagen con relación de aspecto reducida */}
+                <div className="relative pt-[55%] overflow-hidden">
+                  <img
+                    src={producto.imagen}
+                    alt={producto.nombre}
+                    className="absolute top-0 left-0 w-full h-full object-cover transition-transform duration-300 hover:scale-103"
+                    onError={(e) => {
+                      e.target.src = "/placeholder-image.jpg";
+                      e.target.onerror = null;
+                    }}
+                  />
+                  {/* Precio más grande */}
+                  <div className="absolute bottom-0 right-0 bg-marron/80 text-crema px-3 py-1 text-lg font-medium">
+                    ${producto.precio}
                   </div>
+                </div>
 
-                  <CardHeader className="bg-crema-oscuro py-3">
-                    <CardTitle className="text-marron text-lg">
-                      {producto.nombre}
-                    </CardTitle>
-                  </CardHeader>
+                <CardHeader className="bg-crema-oscuro p-2 pb-0">
+                  <CardTitle className="text-marron text-lg line-clamp-1">
+                    {producto.nombre}
+                  </CardTitle>
+                </CardHeader>
 
-                  <CardContent className="bg-crema-oscuro py-3">
-                    <p className="text-marron min-h-[60px] line-clamp-3">
-                      {producto.descripcion}
-                    </p>
-                  </CardContent>
+                <CardContent className="bg-crema-oscuro p-2 py-1">
+                  <p className="text-marron/80 text-base min-h-[2.5em] line-clamp-2">
+                    {producto.descripcion}
+                  </p>
+                </CardContent>
 
-                  <CardFooter className="bg-crema-oscuro py-3">
-                    <Button
-                      className="w-full bg-marron hover:bg-marron/80 text-crema"
-                      onClick={(e) => handleAgregarAlCarrito(e, producto)}
-                    >
-                      Añadir al Carrito
-                    </Button>
-                  </CardFooter>
-                </Card>
-              </div>
+                <CardFooter className="bg-crema-oscuro p-2 pt-0">
+                  <Button
+                    size="sm"
+                    className="w-full bg-marron hover:bg-marron/80 text-crema text-base"
+                    onClick={(e) => handleAgregarAlCarrito(e, producto)}
+                  >
+                    Añadir
+                  </Button>
+                </CardFooter>
+              </Card>
             ))}
           </div>
 

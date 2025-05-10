@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, Search, ShoppingBag, ChevronDown } from "lucide-react";
+import { Search, ShoppingBag, ChevronDown } from "lucide-react";
 import axios from "axios";
 import logo from "../../assets/logo.png";
 import { useCarrito } from "../../Context/CarritoContext";
@@ -9,34 +9,65 @@ import SearchResults from "./SearchResults";
 // Importaciones de shadcn/ui
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 import { Badge } from "../ui/badge";
 
 function NavbarPrincipal() {
   const [search, setSearch] = useState("");
   const [productos, setProductos] = useState([]);
   const [showResults, setShowResults] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   const navigate = useNavigate();
+  const searchRef = useRef(null);
 
   const { cantidadProductos, totalCarrito, actualizarCarrito } = useCarrito();
 
   useEffect(() => {
     actualizarCarrito();
+  }, [actualizarCarrito]);
+
+  // Cerrar resultados al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowResults(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
-    navigate(`/buscar?search=${search}`);
+    
+    if (search.trim() === "") return;
+    
+    navigate(`/buscar?search=${encodeURIComponent(search)}`);
+    setShowResults(false);
+  };
 
-    axios
-      .get(`productos/search?search=${search}`)
-      .then((response) => {
-        setProductos(response.data);
-        setShowResults(true);
-      })
-      .catch((error) => {
-        console.error("Error en la búsqueda:", error);
-      });
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setSearch(value);
+    
+    // Solo realizar búsqueda si hay al menos 3 caracteres
+    if (value.length >= 3) {
+      setIsSearching(true);
+      setShowResults(true);
+      
+      axios
+        .get(`productos/search?search=${encodeURIComponent(value)}&limit=4`)
+        .then((response) => {
+          setProductos(response.data);
+          setIsSearching(false);
+        })
+        .catch((error) => {
+          console.error("Error en la búsqueda:", error);
+          setIsSearching(false);
+        });
+    } else {
+      setShowResults(false);
+    }
   };
 
   return (
@@ -44,14 +75,14 @@ function NavbarPrincipal() {
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           {/* Logo */}
-                <div className="w-full md:w-auto flex justify-center md:justify-start">
-                <Link to="/" className="block">
-                  <img src={logo} className="h-24 w-auto" alt="VG Hogar" />
-                </Link>
-                </div>
+          <div className="w-full md:w-auto flex justify-center md:justify-start">
+            <Link to="/" className="block">
+              <img src={logo} className="h-24 w-auto" alt="VG Hogar" />
+            </Link>
+          </div>
 
-                {/* Barra de búsqueda */}
-          <div className="w-full md:flex-1 max-w-xl">
+          {/* Barra de búsqueda */}
+          <div className="w-full md:flex-1 max-w-xl relative" ref={searchRef}>
             <form onSubmit={handleSearch} className="relative flex w-full">
               <Input
                 className="w-full !bg-crema !text-marron !placeholder:text-marron/60 rounded-r-none border-marron/20 border-r-0 
@@ -59,7 +90,7 @@ function NavbarPrincipal() {
                 type="text"
                 placeholder="Busca tu Producto..."
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={handleInputChange}
               />
               <Button
                 type="submit"
@@ -68,6 +99,14 @@ function NavbarPrincipal() {
                 <Search className="h-4 w-4" />
               </Button>
             </form>
+            
+            {(showResults && productos.length > 0) || isSearching ? (
+              <SearchResults 
+                productos={productos} 
+                onClose={() => setShowResults(false)} 
+                isSearching={isSearching}
+              />
+            ) : null}
           </div>
 
           {/* Carrito Desktop */}
@@ -92,7 +131,6 @@ function NavbarPrincipal() {
           </div>
         </div>
       </div>
-      {showResults && <SearchResults productos={productos} />}
 
       {/* Botón flotante de carrito para móvil */}
       <Link
@@ -114,8 +152,12 @@ function NavbarPrincipal() {
 
 function NavbarCategorias({ children }) {
   const [categorias, setCategorias] = useState([]);
-  const [isOpen, setIsOpen] = useState(false);
-
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [showAllCategories, setShowAllCategories] = useState(true);
+  const navRef = useRef(null);
+  const containerRef = useRef(null);
+  const categoriasListRef = useRef(null);
+  
   useEffect(() => {
     async function obtenerCategorias() {
       try {
@@ -129,69 +171,132 @@ function NavbarCategorias({ children }) {
     obtenerCategorias();
   }, []);
 
+  // Calcular si hay suficiente espacio para todas las categorías
+  useEffect(() => {
+    if (categorias.length > 0 && navRef.current && categoriasListRef.current && containerRef.current) {
+      const checkWidth = () => {
+        const containerWidth = containerRef.current.clientWidth;
+        const inicioWidth = 80; // Aprox ancho del link Inicio
+        const moreButtonWidth = 80; // Aprox ancho del botón Más
+        const categoriesWidth = categoriasListRef.current.scrollWidth;
+        const availableWidth = containerWidth - inicioWidth - 20; // 20px de margen
+        
+        // Si no hay suficiente espacio para todas las categorías
+        if (categoriesWidth > availableWidth) {
+          setShowAllCategories(false);
+        } else {
+          setShowAllCategories(true);
+        }
+      };
+      
+      // Esperar a que se rendericen las referencias
+      setTimeout(checkWidth, 100);
+      
+      // Recalcular cuando cambie el tamaño de la ventana
+      window.addEventListener('resize', checkWidth);
+      return () => window.removeEventListener('resize', checkWidth);
+    }
+  }, [categorias]);
+
+  // Cerrar el menú al hacer clic fuera de él
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showMoreMenu && !event.target.closest('.more-menu-container')) {
+        setShowMoreMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showMoreMenu]);
+
   return (
     <>
-      {/* Versión desktop - Categorías en línea */}
-      <div className="bg-crema-oscuro text-marron hidden md:block">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center overflow-x-auto whitespace-nowrap py-2">
-            <Link
-              to="/"
-              className="px-4 py-2 font-medium text-marron hover:text-marron/70 transition-colors"
-            >
-              Inicio
-            </Link>
-
-            {categorias.map((categoria) => (
+      <div className="bg-crema-oscuro py-1 sticky top-0 z-40">
+        <div className="container mx-auto px-4" ref={containerRef}>
+          <div className="flex items-center justify-between" ref={navRef}>
+            <div className="flex items-center">
+              {/* Inicio siempre visible */}
               <Link
-                key={categoria.id_categoria}
-                to={`/categoria/${categoria.nombre_categoria.toLowerCase()}`}
-                className="px-4 py-2 text-marron hover:text-marron/70 transition-colors"
+                to="/"
+                className="px-4 py-2 font-medium text-marron hover:text-marron/70 transition-colors flex-shrink-0"
               >
-                {categoria.nombre_categoria}
+                Inicio
               </Link>
-            ))}
+              
+              {/* Mostrar todas las categorías si hay espacio */}
+              {showAllCategories && (
+                <div 
+                  className="flex items-center overflow-hidden" 
+                  ref={categoriasListRef}
+                >
+                  {categorias.map((categoria) => (
+                    <Link
+                      key={categoria.id_categoria}
+                      to={`/categoria/${categoria.nombre_categoria.toLowerCase()}`}
+                      className="px-4 py-2 text-marron hover:text-marron/70 transition-colors whitespace-nowrap"
+                    >
+                      {categoria.nombre_categoria}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            {/* Botón "Más" solo si no hay espacio para todas las categorías */}
+            {!showAllCategories && (
+              <div className="flex items-center more-menu-container">
+                <button
+                  onClick={() => setShowMoreMenu(!showMoreMenu)}
+                  className="px-4 py-2 text-marron hover:text-marron/70 transition-colors flex items-center gap-1 bg-crema-oscuro"
+                >
+                  Más <ChevronDown className={`h-4 w-4 transition-transform ${showMoreMenu ? 'rotate-180' : ''}`} />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
-
-      {/* Versión mobile */}
-      <div className="bg-marron text-crema md:hidden">
-        <div className="container mx-auto px-4 py-2">
-          <Sheet open={isOpen} onOpenChange={setIsOpen}>
-            <SheetTrigger asChild>
-              <Button
-                variant="outline"
-                className="w-full justify-between bg-transparent border-crema/30 text-crema hover:bg-marron/80"
-              >
-                Categorías
-                <ChevronDown className="h-4 w-4 ml-2" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="top" className="bg-crema-oscuro border-0">
-              <nav className="flex flex-col space-y-4 mt-4">
-                <Link
-                  to="/"
-                  className="text-marron hover:text-marron/70 py-2 border-b border-marron/10"
-                  onClick={() => setIsOpen(false)}
+      
+      {/* Menú desplegable con todas las categorías */}
+      {showMoreMenu && (
+        <div className="fixed inset-0 z-50 flex justify-center items-start pt-14 bg-black/30">
+          <div className="w-full max-w-md bg-crema rounded-md shadow-lg overflow-hidden mx-4">
+            <div className="p-4 border-b border-marron/10">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-medium text-marron">Todas las categorías</h3>
+                <button 
+                  onClick={() => setShowMoreMenu(false)}
+                  className="text-marron/70 hover:text-marron text-xl font-medium"
                 >
-                  Inicio
+                  ×
+                </button>
+              </div>
+            </div>
+            <div className="py-2 max-h-[70vh] overflow-y-auto">
+              <Link
+                to="/"
+                className="block px-4 py-3 text-marron hover:text-marron hover:bg-marron/10 border-b border-marron/10"
+                onClick={() => setShowMoreMenu(false)}
+              >
+                Inicio
+              </Link>
+              {categorias.map((categoria) => (
+                <Link
+                  key={categoria.id_categoria}
+                  to={`/categoria/${categoria.nombre_categoria.toLowerCase()}`}
+                  className="block px-4 py-3 text-marron hover:text-marron hover:bg-marron/10 border-b border-marron/10"
+                  onClick={() => setShowMoreMenu(false)}
+                >
+                  {categoria.nombre_categoria}
                 </Link>
-                {categorias.map((categoria) => (
-                  <Link
-                    key={categoria.id_categoria}
-                    to={`/categoria/${categoria.nombre_categoria.toLowerCase()}`}
-                    className="text-marron hover:text-marron/70 py-2 border-b border-marron/10"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    {categoria.nombre_categoria}
-                  </Link>
-                ))}
-              </nav>
-            </SheetContent>
-          </Sheet>
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
       {children}
     </>

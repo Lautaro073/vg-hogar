@@ -91,45 +91,39 @@ function App() {
 
   return (
     <>
-    <CarritoProvider>
-    <Router>
-    <Navegacion />
-    
-    <Routes>
-    <Route path="/preload" element={<Preload />} />
-      <Route path="/" element={<Inicio  />} />
-      
-        <Route
-          path="/producto/:id"
-          element={<Producto  />}
-        />
-        <Route path="/carrito" element={<Carrito />} />
-        <Route path="/checkout" element={<Checkout />} />
-        <Route path="/checkout/error" element={<Checkouterror />} />
-        <Route path="/checkout/pendiente" element={<Checkoutpendiente />} />
-        <Route path="/checkout/exito" element={<Checkoutexito />} />
-        <Route
-          path="/productos"
-          element={<ListaProductos  />}
-        />
-        <Route path="/categoria/:categoria" element={<ProductosPorCategoria />}  />
-
-        <Route
-          path="/buscar"
-          element={<SearchPage />}
-        />
-       <Route path="/login" element={<Login />} />
-        <Route path="/login" element={<PrivateRoute />}>
-            <Route path="cargarProductos" element={<CargarProductos />} />
-        </Route>
-        <Route path="*" element={<PageNotFound />} /> {/* Esto captura cualquier ruta no definida */}
-        <Route path="/exitoso" element={<PagoExitoso />} />
-        <Route path="/pendiente" element={<PagoPendiente />} />
-        <Route path="/rechazado" element={<PagoRechazado />} />
-      </Routes>
-      <Footer/>
-    </Router>
-    </CarritoProvider>
+      <CarritoProvider>
+        <Router>
+          <div className="flex flex-col min-h-screen">
+            <Navegacion />
+            
+            <main className="flex-grow">
+              <Routes>
+                <Route path="/preload" element={<Preload />} />
+                <Route path="/" element={<Inicio  />} />
+                <Route path="/producto/:id" element={<Producto />} />
+                <Route path="/carrito" element={<Carrito />} />
+                <Route path="/checkout" element={<Checkout />} />
+                <Route path="/checkout/error" element={<Checkouterror />} />
+                <Route path="/checkout/pendiente" element={<Checkoutpendiente />} />
+                <Route path="/checkout/exito" element={<Checkoutexito />} />
+                <Route path="/productos" element={<ListaProductos />} />
+                <Route path="/categoria/:categoria" element={<ProductosPorCategoria />} />
+                <Route path="/buscar" element={<SearchPage />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/login" element={<PrivateRoute />}>
+                  <Route path="cargarProductos" element={<CargarProductos />} />
+                </Route>
+                <Route path="*" element={<PageNotFound />} />
+                <Route path="/exitoso" element={<PagoExitoso />} />
+                <Route path="/pendiente" element={<PagoPendiente />} />
+                <Route path="/rechazado" element={<PagoRechazado />} />
+              </Routes>
+            </main>
+            
+            <Footer />
+          </div>
+        </Router>
+      </CarritoProvider>
     </>
   );
 }
