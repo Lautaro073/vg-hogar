@@ -173,28 +173,42 @@ function NavbarCategorias({ children }) {
 
   // Calcular si hay suficiente espacio para todas las categorías
   useEffect(() => {
-    if (categorias.length > 0 && navRef.current && categoriasListRef.current && containerRef.current) {
+    if (categorias.length > 0) {
       const checkWidth = () => {
-        const containerWidth = containerRef.current.clientWidth;
-        const inicioWidth = 80; // Aprox ancho del link Inicio
-        const moreButtonWidth = 80; // Aprox ancho del botón Más
-        const categoriesWidth = categoriasListRef.current.scrollWidth;
-        const availableWidth = containerWidth - inicioWidth - 20; // 20px de margen
-        
-        // Si no hay suficiente espacio para todas las categorías
-        if (categoriesWidth > availableWidth) {
-          setShowAllCategories(false);
-        } else {
-          setShowAllCategories(true);
+        // Comprobar que todas las referencias existen antes de hacer cálculos
+        if (!containerRef.current || !categoriasListRef.current) {
+          // Si alguna referencia no existe, programar otro intento
+          setTimeout(checkWidth, 100);
+          return;
+        }
+
+        try {
+          const containerWidth = containerRef.current.clientWidth;
+          const inicioWidth = 80; // Aprox ancho del link Inicio
+          const moreButtonWidth = 80; // Aprox ancho del botón Más
+          const categoriesWidth = categoriasListRef.current.scrollWidth;
+          const availableWidth = containerWidth - inicioWidth - 20; // 20px de margen
+          
+          // Si no hay suficiente espacio para todas las categorías
+          if (categoriesWidth > availableWidth) {
+            setShowAllCategories(false);
+          } else {
+            setShowAllCategories(true);
+          }
+        } catch (error) {
+          console.error("Error al calcular anchos:", error);
         }
       };
       
       // Esperar a que se rendericen las referencias
-      setTimeout(checkWidth, 100);
+      const timer = setTimeout(checkWidth, 150);
       
       // Recalcular cuando cambie el tamaño de la ventana
       window.addEventListener('resize', checkWidth);
-      return () => window.removeEventListener('resize', checkWidth);
+      return () => {
+        window.removeEventListener('resize', checkWidth);
+        clearTimeout(timer);
+      };
     }
   }, [categorias]);
 

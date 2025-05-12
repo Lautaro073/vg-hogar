@@ -1,106 +1,156 @@
-import React, { useState, useEffect  } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
+// Importaciones de componentes UI
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "../components/ui/card";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import { Button } from "../components/ui/button";
+import { Lock, User } from "lucide-react"; // Iconos
 
 function Login() {
-    function showAlert(message, type) {
-        const alertDiv = document.createElement('div');
-        alertDiv.className = `alert-custom alert-${type}`;
-        alertDiv.textContent = message;
-    
-        document.body.appendChild(alertDiv);
-    
-        // Dar un pequeño tiempo para que la alerta inicialice y luego agregar la clase 'show'
-        setTimeout(() => {
-            alertDiv.classList.add('show');
-        }, 10);
-    
-        // Después de 3 segundos, remover la alerta
-        setTimeout(() => {
-            alertDiv.classList.remove('show');
-            // Esperamos que termine la transición de salida y luego eliminamos el elemento del DOM
-            setTimeout(() => {
-                alertDiv.remove();
-            }, 310); // 10 ms adicionales para asegurarnos de que la transición ha terminado
-        }, 3000);
+  const navigate = useNavigate();
+  const [user, setUser] = useState("");
+  const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [userFocused, setUserFocused] = useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
+
+  function showAlert(message, type) {
+    const alertDiv = document.createElement("div");
+    alertDiv.className = `alert-custom alert-${type}`;
+    alertDiv.textContent = message;
+
+    document.body.appendChild(alertDiv);
+    setTimeout(() => alertDiv.classList.add("show"), 10);
+    setTimeout(() => {
+      alertDiv.classList.remove("show");
+      setTimeout(() => alertDiv.remove(), 310);
+    }, 3000);
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!user || !password) {
+      showAlert("Por favor, completa todos los campos.", "error");
+      return;
     }
-    const navigate = useNavigate();
-    const [user, setUser] = useState('');
-    const [password, setPassword] = useState('');
-   
-    
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            const response = await axios.post('login', { user, password });
-    
-            const token = response.data.token;
-    
-            // Guarda el token en localStorage
-            localStorage.setItem('authToken', token); 
-    
-            // Configurar axios para usar este token en solicitudes futuras
-            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`; // Usualmente se antepone 'Bearer' al token, si tu backend lo requiere.
-    
-            showAlert('Inicio de sesión exitoso!', "success"); // Mensaje de éxito
-            navigate("/login/cargarproductos");
-        } catch (error) {
-            console.error("Error:", error.response ? error.response.data : error.message);
-            showAlert('Error al iniciar sesión. Por favor, intenta de nuevo.', "error");
-        }
-    };
-    
-    
-    useEffect(() => {
-        const token = localStorage.getItem('authToken');
-        if (token) {
-            axios.defaults.headers.common['Authorization'] = token;
-        }
-    }, []);
-    
-    
-    return (
-        <section className="vh-100" >
-            <div className="container py-5 h-100 bg-black">
-                <div className="row d-flex justify-content-center align-items-center h-100">
-                    <div className="col-12 col-md-8 col-lg-6 col-xl-5">
-                        <div className="card shadow-2-strong bg-dark" >
-                            <div className="card-body p-5 text-center" style={{backgroundColor: 'dark'}}>
 
-                                <h3 className="mb-5">Iniciar Sesion</h3>
+    setIsSubmitting(true);
+    try {
+      const response = await axios.post("login", { user, password });
+      const token = response.data.token;
 
-                                <div className="form-outline mb-4">
-                                    <input type="email" id="typeEmailX-2" className="form-control form-control-lg" value={user} onChange={e => setUser(e.target.value)} />
-                                    <label className="form-label" htmlFor="typeEmailX-2">Usuario</label>
-                                </div>
+      // Guardar token en localStorage
+      localStorage.setItem("authToken", token);
 
-                                <div className="form-outline mb-4">
-                                    <input type="password" id="typePasswordX-2" className="form-control form-control-lg" value={password} onChange={e => setPassword(e.target.value)} />
-                                    <label className="form-label" htmlFor="typePasswordX-2">Password</label>
-                                </div>
+      // Configurar axios para usar este token en solicitudes futuras
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
-                              
+      showAlert("Inicio de sesión exitoso!", "success");
+      navigate("/login/cargarproductos");
+    } catch (error) {
+      console.error(
+        "Error:",
+        error.response ? error.response.data : error.message
+      );
+      showAlert(
+        "Error al iniciar sesión. Por favor, intenta de nuevo.",
+        "error"
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-                                <button className="btn btn-primary btn-lg btn-block" type="submit" onClick={handleSubmit}>Login</button>
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      axios.defaults.headers.common["Authorization"] = token;
+    }
+  }, []);
 
-                                <hr className="my-4" />
+  return (
+    <div className="bg-crema min-h-screen flex items-center justify-center p-4">
+      <Card className="w-full max-w-md !bg-crema-oscuro border-none shadow-lg">
+        <CardHeader className="space-y-1 text-center">
+          <CardTitle className="text-2xl font-bold text-marron">
+            Iniciar Sesión
+          </CardTitle>
+          <p className="text-marron/70">
+            Ingresa tus credenciales para acceder al panel de administración
+          </p>
+        </CardHeader>
 
-                              
-
-                            </div>
-                        </div>
-                    </div>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="user" className="text-marron">
+                Usuario
+              </Label>
+              <div className="relative">
+                <Input
+                  id="user"
+                  type="text"
+                  placeholder="Ingrese su usuario"
+                  value={user}
+                  onChange={(e) => setUser(e.target.value)}
+                  className="!bg-white border-none text-marron focus-visible:ring-marron/30 pr-10 placeholder:text-marron/40"
+                  required
+                />
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <User className="h-5 w-5 text-marron/60" />
                 </div>
+              </div>
             </div>
-        </section>
-    );
+
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-marron">
+                Contraseña
+              </Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Ingrese su contraseña"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="!bg-white border-none text-marron focus-visible:ring-marron/30 pr-10 placeholder:text-marron/40"
+                  required
+                />
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <Lock className="h-5 w-5 text-marron/60" />
+                </div>
+              </div>
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full !bg-marron hover:!bg-marron/80 text-[#e8d5b5] py-5 text-base font-medium mt-4"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Iniciando sesión..." : "Iniciar sesión"}
+            </Button>
+          </form>
+        </CardContent>
+
+        <CardFooter className="flex justify-center pt-4 text-center">
+          <p className="text-sm text-marron/60">
+            Área restringida para administradores
+          </p>
+        </CardFooter>
+      </Card>
+    </div>
+  );
 }
-export default function LoginForm(){
-    return(
-        <>
-            <Login/> 
-        </>
-    )
-    
+
+export default function LoginForm() {
+  return <Login />;
 }

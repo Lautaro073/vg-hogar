@@ -41,7 +41,7 @@ app.use('/assets', express.static('public/assets'));
 // Rutas
 app.use('/api', userRoutes);
 app.use('/api/productos', productoRoutes);
-app.use('/api/ordenes',  ordenes); // Cambiado para mantener consistencia
+app.use('/api/ordenes',  ordenes);
 app.use('/api/carrito', carritoRoutes);
 app.use('/api/checkout', checkoutRouter); 
 app.use('/api/session', sessionRoutes);

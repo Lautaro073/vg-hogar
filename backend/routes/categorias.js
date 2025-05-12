@@ -1,5 +1,6 @@
 const express = require('express');
 const db = require('../database'); // Asumo que ya tienes una conexión a la base de datos configurada.
+const verifyAdmin = require('../middlewares/middlewares');
 
 const router = express.Router();
 // Obtener todas las categorías
@@ -49,7 +50,7 @@ router.get('/:id_categoria', async (req, res) => {
     }
 });
 // Obtener productos de una categoría específica por nombre de categoría
-router.get('/categoria/:nombre_categoria', async (req, res) => {
+router.get('/:nombre_categoria', async (req, res) => {
     try {
         const [rows] = await db.query(`
             SELECT Productos.*, Imagenes.mime, Imagenes.contenido 
@@ -81,7 +82,7 @@ router.get('/categoria/:nombre_categoria', async (req, res) => {
 
 
 // Agregar una nueva categoría
-router.post('/', async (req, res) => {
+router.post('/',verifyAdmin, async (req, res) => {
     try {
         const { nombre_categoria } = req.body;
         await db.query('INSERT INTO Categorias (nombre_categoria) VALUES (?)', [nombre_categoria]);
@@ -93,7 +94,7 @@ router.post('/', async (req, res) => {
 });
 
 // Actualizar una categoría
-router.put('/:id_categoria', async (req, res) => {
+router.put('/:id_categoria',verifyAdmin, async (req, res) => {
     try {
         const { nombre_categoria } = req.body;
         await db.query('UPDATE Categorias SET nombre_categoria = ? WHERE id_categoria = ?', [nombre_categoria, req.params.id_categoria]);
@@ -105,7 +106,7 @@ router.put('/:id_categoria', async (req, res) => {
 });
 
 // Eliminar una categoría
-router.delete('/:id_categoria', async (req, res) => {
+router.delete('/:id_categoria',verifyAdmin, async (req, res) => {
     try {
         await db.query('DELETE FROM Categorias WHERE id_categoria = ?', [req.params.id_categoria]);
         res.send('Categoría eliminada correctamente');
