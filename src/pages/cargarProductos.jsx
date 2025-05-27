@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import AuthService from "../services/authService";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
@@ -9,12 +11,13 @@ import { Textarea } from "../components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Badge } from "../components/ui/badge";
 import { Separator } from "../components/ui/separator";
-import { Trash2, Edit, Plus, Save, Tag, Package, FileImage, Loader2, Search } from "lucide-react";
+import { Trash2, Edit, Plus, Save, Tag, Package, FileImage, Loader2, Search, LogOut } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../components/ui/alert-dialog";
 
 function AdminPanel() {
+  const navigate = useNavigate();
   // Estados para productos
   const [productos, setProductos] = useState([]);
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
@@ -269,16 +272,31 @@ function AdminPanel() {
       reader.readAsDataURL(file);
     }
   };
-  
-  // Filtrar productos
+    // Filtrar productos
   const productosFiltrados = productos.filter(producto => 
     producto.nombre.toLowerCase().includes(filtroProducto.toLowerCase())
   );
+
+  // Función de logout
+  const handleLogout = () => {
+    AuthService.removeToken();
+    showAlert("Sesión cerrada correctamente", "success");
+    navigate("/login");
+  };
   
   return (
     <div className="bg-crema min-h-screen p-6">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold !text-marron mb-6">Panel de Administración</h1>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold !text-marron">Panel de Administración</h1>          <Button 
+            onClick={handleLogout}
+            variant="outline"
+            className="!bg-crema !border-marron !text-marron hover:!bg-marron/10"
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Cerrar Sesión
+          </Button>
+        </div>
         
         <Tabs defaultValue="productos" className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-8 !bg-crema-oscuro rounded-lg border border-marron/10">

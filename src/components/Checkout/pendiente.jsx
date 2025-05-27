@@ -32,7 +32,7 @@ const PagoPendiente = () => {
           </div>
           
           <div className="pt-4 flex flex-col sm:flex-row gap-3 justify-center">
-            <a href="https://wa.me/+5492474561468?text=Hola,%20quiero%20confirmar%20mi%20pago%20pendiente" target="_blank" rel="noopener noreferrer">
+            <a href="https://wa.me/+5492474415219?text=Hola,%20quiero%20confirmar%20mi%20pago%20pendiente" target="_blank" rel="noopener noreferrer">
               <Button className="w-full bg-green-600 hover:bg-green-700 text-marron">
                 Notificar por WhatsApp
               </Button>

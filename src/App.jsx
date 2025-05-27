@@ -24,34 +24,10 @@ import 'font-awesome/css/font-awesome.min.css';
 import PagoExitoso from "./components/Checkout/exito";
 import PagoPendiente from "./components/Checkout/pendiente";
 import PagoRechazado from "./components/Checkout/rechazado";
-import Preload from "./components/Preload";
+import Nosotros from "./pages/Nosotros";
+import Contacto from "./pages/Contacto";
 
 function App() {
-  function showAlert(message, type) {
-    const alertDiv = document.createElement('div');
-    alertDiv.className = `alert-custom alert-${type}`;
-    alertDiv.textContent = message;
-
-    document.body.appendChild(alertDiv);
-
-    // Dar un pequeño tiempo para que la alerta inicialice y luego agregar la clase 'show'
-    setTimeout(() => {
-        alertDiv.classList.add('show');
-    }, 10);
-
-    // Después de 3 segundos, remover la alerta
-    setTimeout(() => {
-        alertDiv.classList.remove('show');
-        // Esperamos que termine la transición de salida y luego eliminamos el elemento del DOM
-        setTimeout(() => {
-            alertDiv.remove();
-        }, 310); // 10 ms adicionales para asegurarnos de que la transición ha terminado
-    }, 3000);
-}
-
-
-
-
   useEffect(() => {
     let currentSessionId = localStorage.getItem("sessionId");
     console.log("Sesión ID actual:", currentSessionId);
@@ -95,10 +71,8 @@ function App() {
         <Router>
           <div className="flex flex-col min-h-screen">
             <Navegacion />
-            
-            <main className="flex-grow">
+              <main className="flex-grow">
               <Routes>
-                <Route path="/preload" element={<Preload />} />
                 <Route path="/" element={<Inicio  />} />
                 <Route path="/producto/:id" element={<Producto />} />
                 <Route path="/carrito" element={<Carrito />} />
@@ -117,6 +91,8 @@ function App() {
                 <Route path="/exitoso" element={<PagoExitoso />} />
                 <Route path="/pendiente" element={<PagoPendiente />} />
                 <Route path="/rechazado" element={<PagoRechazado />} />
+                <Route path="/nosotros"  element={<Nosotros />}/>
+                <Route path="/contacto" element={<Contacto />} />
               </Routes>
             </main>
             

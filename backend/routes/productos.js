@@ -118,7 +118,7 @@ router.get('/:id', async (req, res) => {
 
 
 // Agregar un nuevo producto
-router.post('/', async (req, res) => {
+router.post('/', verifyAdmin, async (req, res) => {
     try {
         // Datos del producto
         const { nombre, descripcion, precio, id_categoria, stock, tag } = req.body;
@@ -226,7 +226,7 @@ router.delete('/:id', verifyAdmin, async (req, res) => {
 });
 
 // Obtener productos por tag (popular, nuevo, etc)
-router.get('/:tag', async (req, res) => {
+router.get('/tag/:tag', async (req, res) => {
     try {
         const tag = req.params.tag;
         

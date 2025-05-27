@@ -10,7 +10,7 @@ function Footer() {
           {/* Iconos de redes sociales */}
           <div className="flex items-center space-x-6">
             <a
-              href="https://instagram.com/siempre.bandidos?igshid=NTc4MTIwNjQ2YQ=="
+              href="https://www.instagram.com/vg.ventass"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-marron/70 transition-colors"
@@ -19,7 +19,7 @@ function Footer() {
               <Instagram className="h-7 w-7" />
             </a>
             <a
-              href="https://wa.me/+5493865575688"
+              href="https://wa.me/+5492474415219"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-marron/70 transition-colors"

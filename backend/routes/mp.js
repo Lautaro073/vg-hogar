@@ -11,6 +11,9 @@ mercadopago.configure({
 });
 
 router.post('/', (req, res) => {
+    console.log('Datos recibidos:', req.body);
+    console.log('Access token configurado:', process.env.MERCADOPAGO_ACCESS_TOKEN ? 'Sí' : 'No');
+    
     let preference = {
       items: [
         {
@@ -21,21 +24,27 @@ router.post('/', (req, res) => {
         }
       ],
       back_urls: {
-        success: 'http://localhost:3001/checkout',
-        failure: 'http://localhost:3001/checkout/error',
+        success: 'http://localhost:3001/checkout/exito',
+        failure: 'http://localhost:3001/checkout/rechazado',
         pending: 'http://localhost:3001/checkout/pendiente',
       },
       auto_return: 'approved',
     };
   
+    console.log('Preferencia a crear:', JSON.stringify(preference, null, 2));
   
     mercadopago.preferences.create(preference)
       .then(response => {
+        console.log('Respuesta de MercadoPago:', response.body);
         res.send(response.body.init_point);
       })
       .catch(error => {
-        console.log(error);
-        res.status(500).send('Error al crear la preferencia');
+        console.error('Error detallado:', error);
+        res.status(500).json({ 
+          error: 'Error al crear la preferencia',
+          details: error.message 
+        });
       });
-  });
-  module.exports = router;
+});
+
+module.exports = router;

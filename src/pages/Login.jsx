@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import AuthService from "../services/authService";
 
 // Importaciones de componentes UI
 import {
@@ -16,12 +17,9 @@ import { Button } from "../components/ui/button";
 import { Lock, User } from "lucide-react"; // Iconos
 
 function Login() {
-  const navigate = useNavigate();
-  const [user, setUser] = useState("");
+  const navigate = useNavigate();  const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [userFocused, setUserFocused] = useState(false);
-  const [passwordFocused, setPasswordFocused] = useState(false);
 
   function showAlert(message, type) {
     const alertDiv = document.createElement("div");
@@ -35,7 +33,6 @@ function Login() {
       setTimeout(() => alertDiv.remove(), 310);
     }, 3000);
   }
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!user || !password) {
@@ -48,11 +45,8 @@ function Login() {
       const response = await axios.post("login", { user, password });
       const token = response.data.token;
 
-      // Guardar token en localStorage
-      localStorage.setItem("authToken", token);
-
-      // Configurar axios para usar este token en solicitudes futuras
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      // Usar AuthService para manejar el token
+      AuthService.setToken(token);
 
       showAlert("Inicio de sesión exitoso!", "success");
       navigate("/login/cargarproductos");
@@ -71,11 +65,11 @@ function Login() {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
-    if (token) {
-      axios.defaults.headers.common["Authorization"] = token;
+    // Verificar si ya está autenticado y redirigir
+    if (AuthService.isAuthenticated()) {
+      navigate("/login/cargarproductos");
     }
-  }, []);
+  }, [navigate]);
 
   return (
     <div className="bg-crema min-h-screen flex items-center justify-center p-4">

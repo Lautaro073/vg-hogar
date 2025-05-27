@@ -28,7 +28,6 @@ function SearchResults({ productos, onClose, isSearching }) {
   const handleAgregarAlCarrito = (e, producto) => {
     e.stopPropagation();
     agregarAlCarrito(producto);
-    showAlert("Producto agregado al carrito", "success");
   };
   
   const openModal = (product) => {

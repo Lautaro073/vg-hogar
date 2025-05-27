@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useCarrito } from "../../Context/CarritoContext";
-import Preload from "../../components/Preload/index";
+import { CartSkeleton } from "../Skeleton";
 import { Plus, Minus } from "lucide-react";
 import { Button } from "../ui/button";
 import { Dialog } from "../ui/dialog";
@@ -152,16 +152,26 @@ function Carrito() {
         
       const total = calcularTotal();
       
+      console.log('Enviando datos a MercadoPago:', {
+        title: `Compra de: ${productDetails}`,
+        quantity: 1,
+        price: total,
+      });
+      
       const response = await axios.post("create_preference", {
         title: `Compra de: ${productDetails}`,
         quantity: 1,
         price: total,
       });
 
+      console.log('Respuesta recibida:', response.data);
+      
       setPaymentUrl(response.data);
       setShowPaymentSelector(false);
     } catch (error) {
-      console.log("Error al crear la preferencia", error);
+      console.error("Error completo al crear la preferencia:", error);
+      console.error("Respuesta del servidor:", error.response?.data);
+      showAlert("Error al procesar el pago. Inténtalo de nuevo.", "error");
     }
   };
 
@@ -179,10 +189,8 @@ function Carrito() {
   return (
     <div className="bg-crema min-h-screen py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-2xl font-bold text-marron mb-6">Productos en el Carrito</h2>
-
-        {!cargaCompleta ? (
-          <Preload />
+        <h2 className="text-2xl font-bold text-marron mb-6">Productos en el Carrito</h2>        {!cargaCompleta ? (
+          <CartSkeleton />
         ) : productos.length === 0 ? (
           <div className="bg-crema-oscuro p-4 rounded-md text-marron">
             No hay productos en el carrito.

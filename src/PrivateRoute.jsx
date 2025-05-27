@@ -1,10 +1,11 @@
 import React from 'react';
 import { Outlet, useNavigate } from "react-router-dom";
+import AuthService from './services/authService';
 
 const PrivateRoute = () => {
   const navigate = useNavigate();
   
-  const isAuthenticated = localStorage.getItem('authToken');
+  const isAuthenticated = AuthService.isAuthenticated();
   
   if (!isAuthenticated) {
     navigate("/login");

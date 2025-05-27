@@ -97,6 +97,19 @@ export const CarritoProvider = ({ children }) => {
     }
   };
 
+  const limpiarCarrito = async () => {
+    const sessionId = localStorage.getItem("sessionId");
+    if (sessionId) {
+      try {
+        await axios.delete(`carrito/${sessionId}/clear`);
+        setCantidadProductos(0);
+        setTotalCarrito(0);
+      } catch (error) {
+        console.error("Error al limpiar carrito:", error);
+      }
+    }
+  };
+
   useEffect(() => {
     actualizarCarrito();
   }, [userId]);
@@ -108,6 +121,7 @@ export const CarritoProvider = ({ children }) => {
         totalCarrito,
         actualizarCarrito,
         agregarAlCarrito,
+        limpiarCarrito,
         loadingMessage,
       }}
     >

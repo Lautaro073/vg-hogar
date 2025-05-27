@@ -20,10 +20,24 @@ router.get('/con-productos', async (req, res) => {
         // Primero, obtenemos todas las categorías
         const [categorias] = await db.query('SELECT id_categoria, nombre_categoria FROM Categorias');
 
-        // Ahora, por cada categoría, obtenemos sus productos
+        // Ahora, por cada categoría, obtenemos sus productos con imágenes
         for (let categoria of categorias) {
-            const [productos] = await db.query('SELECT * FROM Productos WHERE id_categoria = ?', [categoria.id_categoria]);
-            categoria.productos = productos;
+            const [productos] = await db.query(`
+                SELECT Productos.*, Imagenes.mime, Imagenes.contenido 
+                FROM Productos 
+                LEFT JOIN Imagenes ON Productos.id_imagen = Imagenes.id 
+                WHERE Productos.id_categoria = ?
+            `, [categoria.id_categoria]);
+            
+            // Formatear productos con imágenes base64
+            categoria.productos = productos.map(producto => {
+                return {
+                    ...producto,
+                    imagen: producto.contenido ? 
+                        `data:${producto.mime};base64,${Buffer.from(producto.contenido).toString('base64')}` : 
+                        null
+                };
+            });
         }
 
         res.json(categorias);
